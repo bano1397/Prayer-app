@@ -61,8 +61,8 @@ export default function BottomTabs() {
                 }}
             />
             <Tab.Screen
-  name="SettingsTab"
-  component={SettingsTabRedirect}
+                name="SettingsTab"
+                component={SettingsTabRedirect}
 
                 options={{
                     tabBarIcon: ({ focused }) => (

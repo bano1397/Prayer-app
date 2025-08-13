@@ -1,29 +1,42 @@
+// screens/PrayerTimesScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
-import PrayerCard from '../components/PrayerCard';
+import { useRoute } from '@react-navigation/native';
 import { useLocationAndPrayer } from '../hooks/useLocationAndPrayer';
 
-// import { getTimeUntilNextPrayer } from '../utils/timeUtils';
-
-const prayerData = [
-  { name: 'Fajr', time: '05:23' },
-  { name: 'Dhuhr', time: '12:30' },
-  { name: 'Asr', time: '15:45' },
-  { name: 'Maghrib', time: '18:23' },
-  { name: 'Isha', time: '19:53' },
-];
-
 export default function PrayerTimesScreen() {
-  const [{ city, prayerTimes }, setData] = useState({});
-  const { city: cityName, prayerTimes: times } = useLocationAndPrayer(setData);
-  const activePrayer = 'Asr';
+  const route = useRoute();
+  const params = route.params || {};
+  const [localCity, setLocalCity] = useState(params.city || '');
+  const [times, setTimes] = useState(params.prayerTimes || null);
+
+  const { city, prayerTimes, loading, error, getLocation } = useLocationAndPrayer();
+
+  // if no data came from splash, fetch here
+  useEffect(() => {
+    let mounted = true;
+    if (!times) {
+      (async () => {
+        try {
+          const res = await getLocation();
+          if (!mounted) return;
+          setLocalCity(res.city);
+          setTimes(res.prayerTimes);
+        } catch (err) {
+          console.warn('PrayerTimesScreen getLocation error', err);
+        }
+      })();
+    }
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.location}>{cityName} 📍</Text>
+        <Text style={styles.location}>{localCity || city || 'Detecting location...'} 📍</Text>
         <Text style={styles.date}>{new Date().toDateString()}</Text>
       </View>
+
       {times ? (
         <View style={styles.list}>
           {Object.entries(times).map(([name, time]) => (

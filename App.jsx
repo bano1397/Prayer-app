@@ -8,8 +8,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from './screens/SplashScreen';
 import BottomTabs from './navigation/BottomTabs';
 import SettingsScreen from './screens/SettingsScreen';
-import CitySelectionScreen from './screens/CitySelectionScreen'; // You’ll create this
-import Geocoder from './utills/config'; // Ensure this is correctly set up
+import CitySelectionScreen from './screens/CitySelectionScreen'; 
 
 const Stack = createStackNavigator();
 

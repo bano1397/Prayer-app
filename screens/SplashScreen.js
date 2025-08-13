@@ -1,5 +1,4 @@
 // screens/SplashScreen.js
-
 import React from 'react';
 import {
   View,
@@ -8,86 +7,56 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
+  Alert,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Platform, PermissionsAndroid, Alert } from 'react-native';
-import Geolocation from '@react-native-community/geolocation';
-
+import { useLocationAndPrayer } from '../hooks/useLocationAndPrayer';
 
 const SplashScreen = () => {
   const navigation = useNavigation();
+  const { city, loading, error, getLocation } = useLocationAndPrayer();
 
-const requestLocationPermission = async () => {
-  if (Platform.OS === 'android') {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    );
-    return granted === PermissionsAndroid.RESULTS.GRANTED;
-  }
-  return true; // iOS handles it differently
-};
+  const handleAllowLocation = async () => {
+    try {
+      const result = await getLocation(); // waits for location + geocode + prayer calc
+      // navigate to Home and pass the data so Home can show instantly
+      navigation.replace('Home', {
+        city: result.city,
+        prayerTimes: result.prayerTimes,
+      });
+    } catch (err) {
+      console.warn('getLocation failed', err);
+      Alert.alert('Location Error', err.message || 'Could not determine location');
+    }
+  };
 
-const handleAllowLocation = async () => {
-  const permission = await requestLocationPermission();
-
-  if (!permission) {
-    Alert.alert('Permission Denied', 'Location permission is required.');
-    return;
-  }
-
-  Geolocation.getCurrentPosition(
-    position => {
-      console.log('Location:', position.coords);
-      // You can store this in global state or navigate with params
-      navigation.replace('Home'); // Continue to tabs
-    },
-    error => {
-      console.error('Error getting location:', error.message);
-      Alert.alert('Error', 'Unable to get your location.');
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-  );
-};
-
-const handleSelectCity = () => {
-  navigation.navigate('CitySelection');
-};
-
+  const handleSelectCity = () => navigation.navigate('CitySelection');
 
   return (
     <View style={styles.container}>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-
-      {/* Mosque Icon */}
       <View style={styles.iconContainer}>
-        <Image
-          source={require('../assets/mosque.jpg')} // You must have this icon in assets
-          style={styles.mosqueIcon}
-          resizeMode="contain"
-        />
+        <Image source={require('../assets/mosque.jpg')} style={styles.mosqueIcon} resizeMode="contain" />
       </View>
 
-      {/* Title */}
       <Text style={styles.title}>Peace Be Upon You</Text>
       <Text style={styles.subtitle}>Welcome to Prayer Times</Text>
 
-      {/* Card Section */}
       <View style={styles.card}>
         <View style={styles.locationRow}>
           <Icon name="location-pin" size={20} color="#6B4930" />
           <View>
-            <Text style={styles.locationTitle}>Allow Location Access</Text>
-            <Text style={styles.locationSubtitle}>
-              Enable to get accurate prayer times for your area
+            <Text style={styles.locationTitle}>
+              {loading ? 'Detecting location...' : city ? `Detected: ${city}` : 'Allow Location Access'}
             </Text>
+            <Text style={styles.locationSubtitle}>{new Date().toDateString()}</Text>
           </View>
         </View>
 
-        {/* Buttons */}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.allowButton} onPress={handleAllowLocation}>
-            <Text style={styles.allowText}>Allow</Text>
+            <Text style={styles.allowText}>{loading ? 'Detecting…' : 'Allow'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.selectButton} onPress={handleSelectCity}>
@@ -101,7 +70,6 @@ const handleSelectCity = () => {
 
 export default SplashScreen;
 
-// Add below the component in the same file or split into a separate file
 
 const styles = StyleSheet.create({
   container: {

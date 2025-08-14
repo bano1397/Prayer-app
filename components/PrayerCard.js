@@ -1,3 +1,4 @@
+// components/PrayerCard.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
@@ -22,9 +23,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#eee',
   },
   activeCard: {
-    backgroundColor: '#834519ff',
+    backgroundColor: '#2E7D32', // Green highlight
   },
   name: {
     fontSize: 14,

@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
   },
   activeCard: {
-    backgroundColor: '#2E7D32', // Green highlight
+    backgroundColor: '#6B4930', 
   },
   name: {
     fontSize: 14,

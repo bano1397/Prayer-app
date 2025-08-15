@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { useLocationAndPrayer } from '../hooks/useLocationAndPrayer';
+import PrayerCard from '../components/PrayerCard';
+import moment from 'moment';
+import QiblaCompass from '../components/QiblaCompass';
 
 export default function PrayerTimesScreen() {
   const route = useRoute();
@@ -156,6 +159,25 @@ export default function PrayerTimesScreen() {
     );
   }
 
+  const getCurrentPrayer = () => {
+  if (!times) return null;
+  
+  const now = moment();
+  let currentPrayer = null;
+  let lastTime = moment().startOf('day');
+
+  for (const [name, t] of Object.entries(times)) {
+    const prayerMoment = moment(t, 'HH:mm');
+    if (now.isSameOrAfter(prayerMoment)) {
+      currentPrayer = name;
+      lastTime = prayerMoment;
+    }
+  }
+  return currentPrayer;
+};
+
+const currentPrayer = getCurrentPrayer();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -180,24 +202,24 @@ export default function PrayerTimesScreen() {
       </View>
 
       {times ? (
-        <View style={styles.list}>
-          {Object.entries(times).map(([name, time]) => (
-            <View key={name} style={styles.item}>
-              <Text style={styles.name}>
-                {name.charAt(0).toUpperCase() + name.slice(1)}
-              </Text>
-              <Text style={styles.time}>{time}</Text>
-            </View>
-          ))}
-        </View>
-      ) : (
-        <View style={styles.noDataContainer}>
-          <Text style={styles.noDataText}>No prayer times available</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchLocationData}>
-            <Text style={styles.retryButtonText}>Get Prayer Times</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={styles.list}>
+        {Object.entries(times).map(([name, time]) => (
+          <PrayerCard
+            key={name}
+            name={name.charAt(0).toUpperCase() + name.slice(1)}
+            time={time}
+            active={name === currentPrayer}
+          />
+        ))}
+      </View>
+    ) : (
+      <View style={styles.noDataContainer}>
+        <Text style={styles.noDataText}>No prayer times available</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchLocationData}>
+          <Text style={styles.retryButtonText}>Get Prayer Times</Text>
+        </TouchableOpacity>
+      </View>
+    )}
 
       {/* Optional: Enable live tracking button */}
       {!watchId && times && (
